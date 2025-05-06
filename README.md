@@ -55,3 +55,17 @@ npm run build
 ```
 npm test
 ```
+
+## Run seeder from CLI
+```
+npm run seed -- <count of fake profiles to be generated>
+```
+## Run the app using docker
+```
+docker build -t <image-name> .
+docker run -p 9000:9000 <image-name>
+```
+
+*Note:* Please import spark.postman_collection.json file into postman to quickly interact with the REST endpoints.
+
+
