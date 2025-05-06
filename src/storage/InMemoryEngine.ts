@@ -194,5 +194,13 @@ export class InMemoryEngine {
   __test_unDislike(profileId1: string, profileId2: string): void {
     this.dislikes.get(profileId1)?.delete(profileId2);
   }
+
+  __test_nearByProfile(hashQuadrant: string): Set<string> {
+    return this.getNearByProfileIds(hashQuadrant);
+  }
+
+  __test_calculateScore(profile1: Profile, profile2: Profile): number {
+    return this.calculateScore(profile1, profile2);
+  }
   //#endregion
 }
