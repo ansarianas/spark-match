@@ -5,10 +5,8 @@ import { Profile } from '@models/profile';
 const interestsPool = [
   'music',
   'sports',
-  'reading',
   'travel',
   'movies',
-  'art',
   'coding',
   'gaming',
 ];
@@ -25,7 +23,7 @@ export function seedProfiles(
   for (let i = 0; i < count; i++) {
     const profile: Profile = {
       id: `user${i + 1}`,
-      age: faker.number.int({ min: 18, max: 45 }),
+      age: faker.number.int({ min: 18, max: 23 }),
       gender: faker.helpers.arrayElement(['M', 'F']),
       location: {
         lat: faker.location.latitude({ min: 28.5, max: 29 }),
