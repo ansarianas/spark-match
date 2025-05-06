@@ -53,7 +53,7 @@ export class InMemoryEngine {
     profileId: string,
     page: number = 1,
     limit: number = 5,
-  ): Match[] {
+  ): { matches: Match[]; totalMatchCount: number } {
     // Retrieve the profile from in-memory
     const profile = this.profiles.get(profileId);
     if (!profile) throw new NotFoundError(ERR_MSG.PROFILE_NOT_EXIST);
@@ -62,11 +62,16 @@ export class InMemoryEngine {
     const matchList = this.matches.get(profileId) || [];
 
     // Filter out blocked/disliked/already matched profile
-    const topMatches = matchList
-      .filter(({ profileId: matchId }) => !this.isExcluded(profileId, matchId))
-      .slice((page - 1) * limit, page * limit);
+    const topMatches = matchList.filter(
+      ({ profileId: matchId }) => !this.isExcluded(profileId, matchId),
+    );
 
-    return topMatches;
+    const paginatedMatches = topMatches.slice((page - 1) * limit, page * limit);
+
+    return {
+      matches: paginatedMatches,
+      totalMatchCount: topMatches.length,
+    };
   }
 
   getProfileById(profileId: string): Profile {
@@ -94,11 +99,13 @@ export class InMemoryEngine {
       /**
        * Skip iteration if:
        * 1. Profile is same as the current profile
+       * 2. Profile is blocked/disliked
        * 3. Nearby profile doesn't exist
        */
       const existingProfile = this.profiles.get(nearByProfileId);
       const isSameProfileId = nearByProfileId === profileId;
-      if (isSameProfileId || !existingProfile) continue;
+      const isExcluded = this.isExcluded(profileId, nearByProfileId);
+      if (isSameProfileId || isExcluded || !existingProfile) continue;
 
       // Calculate the match score and add to list
       const score = this.calculateScore(currProfile, existingProfile);
