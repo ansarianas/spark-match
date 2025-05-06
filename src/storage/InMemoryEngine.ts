@@ -109,7 +109,10 @@ export class InMemoryEngine {
 
       // Calculate the match score and add to list
       const score = this.calculateScore(currProfile, existingProfile);
-      matchList.push({ profileId: nearByProfileId, score });
+      if (score >= 15) {
+        this.addMatch(profileId, nearByProfileId, score);
+        matchList.push({ profileId: nearByProfileId, score });
+      }
     }
 
     // Sort the matches by score in desc order
@@ -144,7 +147,18 @@ export class InMemoryEngine {
   }
 
   private getNearByProfileIds(hashQuadrant: string): Set<string> {
-    return this.geohashes.get(hashQuadrant) || new Set();
+    const nearbyIds = new Set<string>();
+    const neighbors = geohash.neighbors(hashQuadrant);
+    neighbors.push(hashQuadrant);
+
+    for (const hash of neighbors) {
+      const ids = this.geohashes.get(hash);
+      if (ids) {
+        for (const id of ids) nearbyIds.add(id);
+      }
+    }
+
+    return nearbyIds;
   }
 
   private isExcluded(profileId1: string, profileId2: string): boolean {
@@ -152,6 +166,13 @@ export class InMemoryEngine {
     const disliked = this.dislikes.get(profileId1)?.has(profileId2) || false;
 
     return blocked || disliked;
+  }
+
+  private addMatch(profileId: string, matchId: string, score: number): void {
+    const match: Match = { profileId: matchId, score };
+    const existingMatches = this.matches.get(profileId) || [];
+    existingMatches.push(match);
+    this.matches.set(profileId, existingMatches);
   }
 
   //#region Only used for test cases
