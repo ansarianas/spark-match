@@ -122,6 +122,48 @@ export class InMemoryEngine {
     this.matches.set(profileId, matchList);
   }
 
+  updateProfile(profileId: string, updates: Partial<Profile>): boolean {
+    const existingProfile = this.profiles.get(profileId);
+    if (!existingProfile) throw new NotFoundError(ERR_MSG.PROFILE_NOT_EXIST);
+
+    // Merge updates
+    const updatedProfile: Profile = {
+      ...existingProfile,
+      ...updates,
+      location: updates.location || existingProfile.location,
+      interests: updates.interests || existingProfile.interests,
+    };
+
+    // Recalculate geohash if location updated
+    if (updates.location) {
+      const oldHash = existingProfile.geohash!;
+      const {
+        location: { lat, lon },
+      } = updatedProfile;
+      const newHash = geohash.encode(lat, lon, 5);
+      updatedProfile.geohash = newHash;
+
+      // Remove from old geohash set
+      this.geohashes.get(oldHash)?.delete(profileId);
+
+      // Add to new geohash set
+      if (!this.geohashes.has(newHash)) this.geohashes.set(newHash, new Set());
+      this.geohashes.get(newHash)!.add(profileId);
+    }
+
+    // Update and recompute matches
+    this.profiles.set(profileId, updatedProfile);
+    this.computeMatchScore(profileId);
+
+    // Update matches for nearby profiles
+    const nearByProfiles = this.getNearByProfileIds(updatedProfile.geohash!);
+    for (const pid of nearByProfiles) {
+      if (pid !== profileId) this.computeMatchScore(pid);
+    }
+
+    return true;
+  }
+
   totalRegisteredProfiles() {
     return this.profiles.size;
   }

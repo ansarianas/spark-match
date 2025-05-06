@@ -68,3 +68,31 @@ export const topMatches = asyncHandler(
     method: HttpMethods.POST,
   },
 );
+
+/**
+ * @public PATCH /api/user/profile/:user_id
+ */
+export const updateProfile = asyncHandler(
+  async (req: Request, res: Response) => {
+    const {
+      body,
+      params: { user_id },
+    } = req;
+
+    if (!body) {
+      throw new BadRequestError('Body is missing!');
+    }
+  
+    engine.updateProfile(user_id, body);
+  
+    const successMsg = 'User profile is now udpated!';
+    const data = { success: true };
+    const response = successHandler(successMsg, HttpCodes.OK.code, data);
+
+    return res.status(res.statusCode).send(response);
+  },
+  {
+    apiEndpoint: '/api/user/profile/:user_id',
+    method: HttpMethods.PATCH,
+  },
+);
