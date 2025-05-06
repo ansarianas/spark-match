@@ -112,6 +112,10 @@ export class InMemoryEngine {
     this.matches.set(profileId, matchList);
   }
 
+  totalRegisteredProfiles() {
+    return this.profiles.size;
+  }
+
   private calculateScore(profile1: Profile, profile2: Profile): number {
     const { interests: p1Int, age: p1Age, location: p1Loc } = profile1;
     const { interests: p2Int, age: p2Age, location: p2Loc } = profile2;
