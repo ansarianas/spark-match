@@ -21,14 +21,14 @@ describe('InMemoryEngine Tests', () => {
 
   it('should throw an error if profile already exists', () => {
     const error = new BadRequestError(ERR_MSG.PROFILE_EXIST);
-  
+
     expect(() => engine.addProfile(profile1)).toThrow(error);
   });
 
   it('should compute match score correctly for two profiles', () => {
     engine.addProfile(profile2);
 
-    const matches = engine.getTopMatches('user1', 1, 2);
+    const { matches } = engine.getTopMatches('user1', 1, 2);
 
     expect(matches.length).toBeGreaterThan(0);
     expect(matches[0].profileId).toBe('user2');
@@ -37,7 +37,7 @@ describe('InMemoryEngine Tests', () => {
   it('should exclude blocked profiles from matches', () => {
     engine.__test_addBlock('user1', 'user2');
 
-    const matches = engine.getTopMatches('user1', 1, 2);
+    const { matches } = engine.getTopMatches('user1', 1, 2);
 
     expect(matches.length).toBe(0);
   });
@@ -45,7 +45,7 @@ describe('InMemoryEngine Tests', () => {
   it('should exclude disliked profiles from matches', () => {
     engine.__test_addDislike('user1', 'user2');
 
-    const matches = engine.getTopMatches('user1', 1, 2);
+    const { matches } = engine.getTopMatches('user1', 1, 2);
 
     expect(matches.length).toBe(0);
   });
@@ -55,15 +55,15 @@ describe('InMemoryEngine Tests', () => {
     engine.__test_unDislike('user1', 'user2');
     engine.addProfile(profile3);
 
-    const matches1 = engine.getTopMatches('user1', 1, 2);
-    const matches2 = engine.getTopMatches('user2', 1, 2);
+    const { matches: matches1 } = engine.getTopMatches('user1', 1, 2);
+    const { matches: matches2 } = engine.getTopMatches('user2', 1, 2);
 
     expect(matches1[0].profileId).toBe('user2');
     expect(matches2[0].profileId).toBe('user1');
   });
 
   it('should paginate matches correctly', () => {
-    const matches = engine.getTopMatches('user1', 1, 1);
+    const { matches } = engine.getTopMatches('user1', 1, 1);
 
     expect(matches.length).toBe(1);
     expect(matches[0].profileId).toBe('user2');
@@ -71,7 +71,6 @@ describe('InMemoryEngine Tests', () => {
 
   it('should throw error if profile does not exist', () => {
     const error = new NotFoundError(ERR_MSG.PROFILE_NOT_EXIST);
-  
     expect(() => engine.getProfileById('user100')).toThrow(error);
   });
 });
