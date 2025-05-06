@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import { HttpCodes, HttpMethods } from '@constants/http';
 import { asyncHandler } from '@utils/helper';
 import { successHandler } from '@utils/response';
+import { engine } from 'server';
+import { BadRequestError } from '@utils/API';
 
 /**
  * @public POST /api/user/profile
@@ -10,12 +12,7 @@ export const register = asyncHandler(
   async (req: Request, res: Response) => {
     const { body } = req;
 
-    /**
-     * TODO:
-     * 1. Save user in-memory & assign geo hash quadrant
-     * 2. Precompute match
-     * 3. Should be stored and indexed per quadrant
-     */
+    engine.addProfile(body);
 
     const successMsg = 'User is now registered!';
     const data = { success: true, userId: body.id };
@@ -36,16 +33,32 @@ export const topMatches = asyncHandler(
   async (req: Request, res: Response) => {
     const {
       params: { user_id },
+      query,
     } = req;
+    const limit = parseInt(query.limit as string) || 5;
+    const page = parseInt(query.page as string) || 1;
 
-    /**
-     * TODO: Returns top 5 matches
-     * 1. Include (Age, Interest, Location proximity)
-     * 2. Exclude (Blocked user, disliked user, matched user
-     */
+    if (!user_id) {
+      throw new BadRequestError('User id is required!');
+    }
+
+    const { matches, totalMatchCount } = engine.getTopMatches(
+      user_id,
+      page,
+      limit,
+    );
+
+    const matchProfiles = matches.map(({ profileId, score }) => {
+      const profile = engine.getProfileById(profileId);
+      return { ...profile, score };
+    });
 
     const successMsg = 'Top matches fetched!';
-    const data = { success: true, user_id: `User id is ${user_id}` };
+    const data = {
+      success: true,
+      totalMatchCount,
+      matches: matchProfiles,
+    };
     const response = successHandler(successMsg, HttpCodes.OK.code, data);
 
     return res.status(res.statusCode).send(response);
