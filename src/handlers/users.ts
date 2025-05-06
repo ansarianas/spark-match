@@ -2,8 +2,8 @@ import { Request, Response } from 'express';
 import { HttpCodes, HttpMethods } from '@constants/http';
 import { asyncHandler } from '@utils/helper';
 import { successHandler } from '@utils/response';
-import { engine } from 'server';
 import { BadRequestError } from '@utils/API';
+import { engine } from '../server';
 
 /**
  * @public POST /api/user/profile

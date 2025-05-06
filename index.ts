@@ -7,6 +7,7 @@ moduleAlias.addAliases({
   '@db': __dirname + '/src/db',
   '@handlers': __dirname + '/src/handlers',
   '@middlewares': __dirname + '/src/middlewares',
+  '@storage': __dirname + '/src/storage',
   '@models': __dirname + '/src/models',
   '@routes': __dirname + '/src/routes',
   '@validations': __dirname + '/src/validations',
